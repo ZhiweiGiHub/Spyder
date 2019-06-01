@@ -1,0 +1,28 @@
+import re
+import requests
+import bs4
+import urllib
+import pandas as pd
+
+# http://www.i-bankers.net/completed-transactions.php
+
+soup = bs4.BeautifulSoup(open('F:/1.txt', encoding='utf_8').read(), "lxml")
+title = pd.DataFrame(str(soup.select('div')).split('[')[1].split(']')[0].split('data-name'))[0].iloc[1:178]
+title = title.reset_index(drop=True)
+all_info = pd.DataFrame(columns=['name', 'raise', 'subtitle', 'role', 'date'], index=range(177))
+
+for index, i in all_info.iterrows():
+    row = pd.DataFrame(re.split(r"<h3>|</h3>|<p|</p>", str(title.iloc[index])))
+    all_info['name'].iloc[index] = row[0].iloc[1]
+    for index2, j in row.iterrows():
+        if 'raise' in str(j[0]).split('"'):
+            all_info['raise'].iloc[index] = j[0][15:]
+        elif 'subtitle' in str(j[0]).split('"'):
+            all_info['subtitle'].iloc[index] = j[0][18:]
+        elif 'role' in str(j[0]).split('"'):
+            all_info['role'].iloc[index] = j[0][14:]
+        elif 'date' in str(j[0]).split('"'):
+            all_info['date'].iloc[index] = j[0][14:]
+
+
+all_info.to_csv('F:/information.csv')
